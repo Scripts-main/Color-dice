@@ -17,8 +17,8 @@ screenGui.Parent = playerGui
 -- 2. Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 600, 0, 340)
-mainFrame.Position = UDim2.new(0.5, -300, 0.5, -170)
+mainFrame.Size = UDim2.new(0, 600, 0, 350)
+mainFrame.Position = UDim2.new(0.5, -300, 0.5, -175)
 mainFrame.BackgroundColor3 = Color3.fromRGB(24, 20, 37)
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = false
@@ -72,36 +72,35 @@ local diceColors = {
 	Verde = Color3.fromRGB(111, 207, 151)
 }
 
--- Lista para seleccionar colores al azar (6 opciones posibles)
+-- Lista de los 6 colores posibles para al girar
 local colorKeys = {"Rojo", "Morado", "Azul", "Naranja", "Amarillo", "Verde"}
 
--- Contenedor para exactamente 5 SLOTS de dados
+-- Contenedor para exactamente 4 SLOTS de dados
 local slotsFrame = Instance.new("Frame")
 slotsFrame.Size = UDim2.new(0, 290, 0, 80)
 slotsFrame.Position = UDim2.new(0, 20, 0, 70)
 slotsFrame.BackgroundTransparency = 1
 slotsFrame.Parent = contentFrame
 
--- Configuración inicial visible de los 5 dados
+-- Configuración inicial visible de los 4 dados
 local initialDice = {
-	{Name = "Rojo", Color = diceColors.Rojo},
-	{Name = "Morado", Color = diceColors.Morado},
+	{Name = "Naranja", Color = diceColors.Naranja},
+	{Name = "Naranja", Color = diceColors.Naranja},
 	{Name = "Azul", Color = diceColors.Azul},
-	{Name = "Verde", Color = diceColors.Verde},
-	{Name = "Amarillo", Color = diceColors.Amarillo}
+	{Name = "Azul", Color = diceColors.Azul}
 }
 
 local diceSlots = {}
 for i, diceData in ipairs(initialDice) do
 	local slot = Instance.new("Frame")
-	slot.Size = UDim2.new(0, 52, 0, 52)
-	slot.Position = UDim2.new(0, (i - 1) * 58, 0, 0)
+	slot.Size = UDim2.new(0, 60, 0, 60)
+	slot.Position = UDim2.new(0, (i - 1) * 70, 0, 0)
 	slot.BackgroundColor3 = diceData.Color
 	slot.BorderSizePixel = 0
 	slot.Parent = slotsFrame
 	
 	local slotCorner = Instance.new("UICorner")
-	slotCorner.CornerRadius = UDim.new(0, 12)
+	slotCorner.CornerRadius = UDim.new(0, 14)
 	slotCorner.Parent = slot
 	
 	local label = Instance.new("TextLabel")
@@ -135,7 +134,7 @@ rollCorner.Parent = rollBtn
 -- 4. Controles de Tamaño
 local sizeLabel = Instance.new("TextLabel")
 sizeLabel.Size = UDim2.new(0, 50, 0, 30)
-sizeLabel.Position = UDim2.new(0, 20, 0, 230)
+sizeLabel.Position = UDim2.new(0, 20, 0, 225)
 sizeLabel.BackgroundTransparency = 1
 sizeLabel.Text = "Tamaño"
 sizeLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
@@ -145,7 +144,7 @@ sizeLabel.Parent = contentFrame
 
 local minusSize = Instance.new("TextButton")
 minusSize.Size = UDim2.new(0, 30, 0, 30)
-minusSize.Position = UDim2.new(0, 80, 0, 230)
+minusSize.Position = UDim2.new(0, 80, 0, 225)
 minusSize.BackgroundColor3 = Color3.fromRGB(45, 40, 65)
 minusSize.Text = "-"
 minusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -159,7 +158,7 @@ sizeCorner1.Parent = minusSize
 
 local percentLabel = Instance.new("TextLabel")
 percentLabel.Size = UDim2.new(0, 50, 0, 30)
-percentLabel.Position = UDim2.new(0, 115, 0, 230)
+percentLabel.Position = UDim2.new(0, 115, 0, 225)
 percentLabel.BackgroundTransparency = 1
 percentLabel.Text = "100%"
 percentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -169,7 +168,7 @@ percentLabel.Parent = contentFrame
 
 local plusSize = Instance.new("TextButton")
 plusSize.Size = UDim2.new(0, 30, 0, 30)
-plusSize.Position = UDim2.new(0, 170, 0, 230)
+plusSize.Position = UDim2.new(0, 170, 0, 225)
 plusSize.BackgroundColor3 = Color3.fromRGB(45, 40, 65)
 plusSize.Text = "+"
 plusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -181,7 +180,19 @@ local sizeCorner2 = Instance.new("UICorner")
 sizeCorner2.CornerRadius = UDim.new(0, 8)
 sizeCorner2.Parent = plusSize
 
--- 5. Botones de Acción Derecha
+-- 5. Invitación de Discord (Centrada abajo y de tamaño legible)
+local discordText = Instance.new("TextLabel")
+discordText.Size = UDim2.new(0, 400, 0, 25)
+discordText.Position = UDim2.new(0.5, -200, 1, -30)
+discordText.BackgroundTransparency = 1
+discordText.Text = "Discord: https://discord.gg/KJFgdK6NHM"
+discordText.TextColor3 = Color3.fromRGB(160, 160, 185)
+discordText.TextSize = 11
+discordText.Font = Enum.Font.FredokaOne
+discordText.TextXAlignment = Enum.TextXAlignment.Center
+discordText.Parent = contentFrame
+
+-- 6. Botones de Acción Derecha
 local actionButtons = {
 	{Text = "+ Añadir Más", Color = Color3.fromRGB(47, 128, 237)},
 	{Text = "? ¿Trato?", Color = Color3.fromRGB(254, 213, 89)},
@@ -225,7 +236,7 @@ uiScale.Parent = mainFrame
 -- LÓGICA Y FUNCIONALIDAD
 -- =======================================================
 
--- 1. Girar Dados (Aleatoriza los 5 slots entre los 6 colores disponibles)
+-- 1. Girar Dados (Aleatoriza los 4 slots entre los 6 colores disponibles)
 rollBtn.MouseButton1Click:Connect(function()
 	for _, slotData in ipairs(diceSlots) do
 		local randomColorName = colorKeys[math.random(1, #colorKeys)]
@@ -261,7 +272,7 @@ minBtn.MouseButton1Click:Connect(function()
 		minBtn.Text = "+"
 	else
 		contentFrame.Visible = true
-		mainFrame.Size = UDim2.new(0, 600, 0, 340)
+		mainFrame.Size = UDim2.new(0, 600, 0, 350)
 		minBtn.Text = "-"
 	end
 end)
