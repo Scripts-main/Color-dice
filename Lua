@@ -3,18 +3,18 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Destroy previous GUI if it exists
+-- Destruir GUI previa si existe
 if playerGui:FindFirstChild("ColorDiceGui") then
 	playerGui.ColorDiceGui:Destroy()
 end
 
--- 1. Main ScreenGui
+-- 1. ScreenGui Principal
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ColorDiceGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- 2. Main Frame
+-- 2. Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 600, 0, 340)
@@ -28,19 +28,19 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 20)
 mainCorner.Parent = mainFrame
 
--- Title
+-- Título
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0, 200, 0, 40)
 title.Position = UDim2.new(0, 20, 0, 15)
 title.BackgroundTransparency = 1
-title.Text = "Color Dice"
+title.Text = "Dados de Colores"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.TextSize = 22
 title.Font = Enum.Font.FredokaOne
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = mainFrame
 
--- Minimize Button (-)
+-- Botón de Minimizar (-)
 local minBtn = Instance.new("TextButton")
 minBtn.Size = UDim2.new(0, 35, 0, 35)
 minBtn.Position = UDim2.new(1, -50, 0, 15)
@@ -55,67 +55,74 @@ local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(1, 0)
 minCorner.Parent = minBtn
 
--- Content Container (Holds elements to minimize/scale easily)
+-- Contenedor de Contenido
 local contentFrame = Instance.new("Frame")
 contentFrame.Name = "ContentFrame"
 contentFrame.Size = UDim2.new(1, 0, 1, 0)
 contentFrame.BackgroundTransparency = 1
 contentFrame.Parent = mainFrame
 
--- 3. Dice Slots Container (Only Red, Purple, Blue)
+-- 3. Diccionario con los 6 COLORES disponibles
+local diceColors = {
+	Rojo = Color3.fromRGB(235, 87, 87),
+	Morado = Color3.fromRGB(155, 81, 224),
+	Azul = Color3.fromRGB(86, 204, 242),
+	Naranja = Color3.fromRGB(247, 131, 97),
+	Amarillo = Color3.fromRGB(254, 213, 89),
+	Verde = Color3.fromRGB(111, 207, 151)
+}
+
+-- Lista para seleccionar colores al azar (6 opciones posibles)
+local colorKeys = {"Rojo", "Morado", "Azul", "Naranja", "Amarillo", "Verde"}
+
+-- Contenedor para exactamente 5 SLOTS de dados
 local slotsFrame = Instance.new("Frame")
-slotsFrame.Size = UDim2.new(0, 240, 0, 80)
+slotsFrame.Size = UDim2.new(0, 290, 0, 80)
 slotsFrame.Position = UDim2.new(0, 20, 0, 70)
 slotsFrame.BackgroundTransparency = 1
 slotsFrame.Parent = contentFrame
 
-local diceColors = {
-	Red = Color3.fromRGB(235, 87, 87),
-	Purple = Color3.fromRGB(155, 81, 224),
-	Blue = Color3.fromRGB(86, 204, 242),
-	Orange = Color3.fromRGB(247, 131, 97),
-	Yellow = Color3.fromRGB(254, 213, 89),
-	Green = Color3.fromRGB(111, 207, 151)
-}
-
+-- Configuración inicial visible de los 5 dados
 local initialDice = {
-	{Name = "Red", Color = diceColors.Red},
-	{Name = "Purple", Color = diceColors.Purple},
-	{Name = "Blue", Color = diceColors.Blue}
+	{Name = "Rojo", Color = diceColors.Rojo},
+	{Name = "Morado", Color = diceColors.Morado},
+	{Name = "Azul", Color = diceColors.Azul},
+	{Name = "Verde", Color = diceColors.Verde},
+	{Name = "Amarillo", Color = diceColors.Amarillo}
 }
 
 local diceSlots = {}
 for i, diceData in ipairs(initialDice) do
 	local slot = Instance.new("Frame")
-	slot.Size = UDim2.new(0, 65, 0, 65)
-	slot.Position = UDim2.new(0, (i - 1) * 75, 0, 0)
+	slot.Size = UDim2.new(0, 52, 0, 52)
+	slot.Position = UDim2.new(0, (i - 1) * 58, 0, 0)
 	slot.BackgroundColor3 = diceData.Color
 	slot.BorderSizePixel = 0
 	slot.Parent = slotsFrame
 	
 	local slotCorner = Instance.new("UICorner")
-	slotCorner.CornerRadius = UDim.new(0, 14)
+	slotCorner.CornerRadius = UDim.new(0, 12)
 	slotCorner.Parent = slot
 	
 	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(1, 0, 0, 20)
+	label.Size = UDim2.new(1, 0, 0, 15)
 	label.Position = UDim2.new(0, 0, 1, 2)
 	label.BackgroundTransparency = 1
 	label.Text = diceData.Name
 	label.TextColor3 = Color3.fromRGB(180, 180, 200)
-	label.TextSize = 11
+	label.TextSize = 10
 	label.Font = Enum.Font.FredokaOne
 	label.Parent = slot
 	
 	table.insert(diceSlots, {Frame = slot, Label = label})
 end
 
--- Roll Button
+-- Botón de Girar
 local rollBtn = Instance.new("TextButton")
 rollBtn.Size = UDim2.new(0, 120, 0, 40)
 rollBtn.Position = UDim2.new(0, 20, 0, 165)
 rollBtn.BackgroundColor3 = Color3.fromRGB(254, 213, 89)
-rollBtn.Text = "Roll"
+rollBtn.Text = "Girar"
 rollBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 rollBtn.TextSize = 18
 rollBtn.Font = Enum.Font.FredokaOne
@@ -125,20 +132,20 @@ local rollCorner = Instance.new("UICorner")
 rollCorner.CornerRadius = UDim.new(0, 20)
 rollCorner.Parent = rollBtn
 
--- 4. Size Control Controls
+-- 4. Controles de Tamaño
 local sizeLabel = Instance.new("TextLabel")
-sizeLabel.Size = UDim2.new(0, 40, 0, 30)
+sizeLabel.Size = UDim2.new(0, 50, 0, 30)
 sizeLabel.Position = UDim2.new(0, 20, 0, 230)
 sizeLabel.BackgroundTransparency = 1
-sizeLabel.Text = "Size"
+sizeLabel.Text = "Tamaño"
 sizeLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
-sizeLabel.TextSize = 14
+sizeLabel.TextSize = 12
 sizeLabel.Font = Enum.Font.FredokaOne
 sizeLabel.Parent = contentFrame
 
 local minusSize = Instance.new("TextButton")
 minusSize.Size = UDim2.new(0, 30, 0, 30)
-minusSize.Position = UDim2.new(0, 70, 0, 230)
+minusSize.Position = UDim2.new(0, 80, 0, 230)
 minusSize.BackgroundColor3 = Color3.fromRGB(45, 40, 65)
 minusSize.Text = "-"
 minusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -151,8 +158,8 @@ sizeCorner1.CornerRadius = UDim.new(0, 8)
 sizeCorner1.Parent = minusSize
 
 local percentLabel = Instance.new("TextLabel")
-percentLabel.Size = UDim2.new(0, 60, 0, 30)
-percentLabel.Position = UDim2.new(0, 105, 0, 230)
+percentLabel.Size = UDim2.new(0, 50, 0, 30)
+percentLabel.Position = UDim2.new(0, 115, 0, 230)
 percentLabel.BackgroundTransparency = 1
 percentLabel.Text = "100%"
 percentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -174,14 +181,14 @@ local sizeCorner2 = Instance.new("UICorner")
 sizeCorner2.CornerRadius = UDim.new(0, 8)
 sizeCorner2.Parent = plusSize
 
--- 5. Right Action Buttons
+-- 5. Botones de Acción Derecha
 local actionButtons = {
-	{Text = "+ Add More", Color = Color3.fromRGB(47, 128, 237)},
-	{Text = "? Deal?", Color = Color3.fromRGB(254, 213, 89)},
-	{Text = "X L Trade", Color = Color3.fromRGB(235, 87, 87)},
-	{Text = "✓ Fair Trade", Color = Color3.fromRGB(111, 207, 151)},
-	{Text = "≡ Last Offer", Color = Color3.fromRGB(138, 77, 217)},
-	{Text = "- No Thanks", Color = Color3.fromRGB(242, 153, 74)}
+	{Text = "+ Añadir Más", Color = Color3.fromRGB(47, 128, 237)},
+	{Text = "? ¿Trato?", Color = Color3.fromRGB(254, 213, 89)},
+	{Text = "X Mala Oferta", Color = Color3.fromRGB(235, 87, 87)},
+	{Text = "✓ Trato Justo", Color = Color3.fromRGB(111, 207, 151)},
+	{Text = "≡ Última Oferta", Color = Color3.fromRGB(138, 77, 217)},
+	{Text = "- No Gracias", Color = Color3.fromRGB(242, 153, 74)}
 }
 
 local rightGrid = Instance.new("Frame")
@@ -200,7 +207,7 @@ for _, btnData in ipairs(actionButtons) do
 	btn.BackgroundColor3 = btnData.Color
 	btn.Text = btnData.Text
 	btn.TextColor3 = (btnData.Color == Color3.fromRGB(254, 213, 89)) and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
-	btn.TextSize = 14
+	btn.TextSize = 13
 	btn.Font = Enum.Font.FredokaOne
 	btn.Parent = rightGrid
 	
@@ -209,18 +216,16 @@ for _, btnData in ipairs(actionButtons) do
 	corner.Parent = btn
 end
 
--- UIScale Object for proportional sizing
+-- Objeto UIScale para escalado proporcional de toda la interfaz
 local uiScale = Instance.new("UIScale")
 uiScale.Scale = 1
 uiScale.Parent = mainFrame
 
 -- =======================================================
--- LOGIC & FEATURES
+-- LÓGICA Y FUNCIONALIDAD
 -- =======================================================
 
--- 1. Dice Rolling (Rolls colors for the 3 slots)
-local colorKeys = {"Red", "Purple", "Blue", "Orange", "Yellow", "Green"}
-
+-- 1. Girar Dados (Aleatoriza los 5 slots entre los 6 colores disponibles)
 rollBtn.MouseButton1Click:Connect(function()
 	for _, slotData in ipairs(diceSlots) do
 		local randomColorName = colorKeys[math.random(1, #colorKeys)]
@@ -229,7 +234,7 @@ rollBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 2. Proportional Scaling System
+-- 2. Sistema de Escalado Proporcional
 local currentScale = 1
 
 local function updateScale(delta)
@@ -246,7 +251,7 @@ minusSize.MouseButton1Click:Connect(function()
 	updateScale(-0.1)
 end)
 
--- 3. Minimize / Maximize Functionality
+-- 3. Funcionalidad de Minimizar / Maximizar
 local isMinimized = false
 minBtn.MouseButton1Click:Connect(function()
 	isMinimized = not isMinimized
@@ -261,7 +266,7 @@ minBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 4. Drag Window Mechanics
+-- 4. Mecánica para Mover la Ventana (Arrastrar)
 local dragging, dragInput, dragStart, startPos
 
 local function update(input)
