@@ -1,5 +1,5 @@
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -19,8 +19,9 @@ local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 600, 0, 360)
 mainFrame.Position = UDim2.new(0.5, -300, 0.5, -180)
-mainFrame.BackgroundColor3 = Color3.fromRGB(24, 20, 37) -- Dark background
+mainFrame.BackgroundColor3 = Color3.fromRGB(24, 20, 37)
 mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = false
 mainFrame.Parent = screenGui
 
 local mainCorner = Instance.new("UICorner")
@@ -54,12 +55,19 @@ local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(1, 0)
 minCorner.Parent = minBtn
 
+-- Content Container (Holds elements to minimize/scale easily)
+local contentFrame = Instance.new("Frame")
+contentFrame.Name = "ContentFrame"
+contentFrame.Size = UDim2.new(1, 0, 1, 0)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+
 -- 3. Dice Slots Container
 local slotsFrame = Instance.new("Frame")
 slotsFrame.Size = UDim2.new(0, 300, 0, 80)
 slotsFrame.Position = UDim2.new(0, 20, 0, 70)
 slotsFrame.BackgroundTransparency = 1
-slotsFrame.Parent = mainFrame
+slotsFrame.Parent = contentFrame
 
 local diceColors = {
 	Orange = Color3.fromRGB(247, 131, 97),
@@ -105,13 +113,13 @@ rollBtn.Text = "Roll"
 rollBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 rollBtn.TextSize = 18
 rollBtn.Font = Enum.Font.FredokaOne
-rollBtn.Parent = mainFrame
+rollBtn.Parent = contentFrame
 
 local rollCorner = Instance.new("UICorner")
 rollCorner.CornerRadius = UDim.new(0, 20)
 rollCorner.Parent = rollBtn
 
--- 4. Size Control
+-- 4. Size Control Controls
 local sizeLabel = Instance.new("TextLabel")
 sizeLabel.Size = UDim2.new(0, 40, 0, 30)
 sizeLabel.Position = UDim2.new(0, 20, 0, 230)
@@ -120,7 +128,7 @@ sizeLabel.Text = "Size"
 sizeLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
 sizeLabel.TextSize = 14
 sizeLabel.Font = Enum.Font.FredokaOne
-sizeLabel.Parent = mainFrame
+sizeLabel.Parent = contentFrame
 
 local minusSize = Instance.new("TextButton")
 minusSize.Size = UDim2.new(0, 30, 0, 30)
@@ -130,7 +138,7 @@ minusSize.Text = "-"
 minusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
 minusSize.TextSize = 18
 minusSize.Font = Enum.Font.FredokaOne
-minusSize.Parent = mainFrame
+minusSize.Parent = contentFrame
 
 local sizeCorner1 = Instance.new("UICorner")
 sizeCorner1.CornerRadius = UDim.new(0, 8)
@@ -144,7 +152,7 @@ percentLabel.Text = "100%"
 percentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 percentLabel.TextSize = 14
 percentLabel.Font = Enum.Font.FredokaOne
-percentLabel.Parent = mainFrame
+percentLabel.Parent = contentFrame
 
 local plusSize = Instance.new("TextButton")
 plusSize.Size = UDim2.new(0, 30, 0, 30)
@@ -154,7 +162,7 @@ plusSize.Text = "+"
 plusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
 plusSize.TextSize = 18
 plusSize.Font = Enum.Font.FredokaOne
-plusSize.Parent = mainFrame
+plusSize.Parent = contentFrame
 
 local sizeCorner2 = Instance.new("UICorner")
 sizeCorner2.CornerRadius = UDim.new(0, 8)
@@ -170,9 +178,9 @@ resultLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
 resultLabel.TextSize = 13
 resultLabel.Font = Enum.Font.FredokaOne
 resultLabel.TextXAlignment = Enum.TextXAlignment.Left
-resultLabel.Parent = mainFrame
+resultLabel.Parent = contentFrame
 
--- 5. Right Action Buttons (Trade Quick Responses)
+-- 5. Right Action Buttons
 local actionButtons = {
 	{Text = "+ Add More", Color = Color3.fromRGB(47, 128, 237)},
 	{Text = "? Deal?", Color = Color3.fromRGB(254, 213, 89)},
@@ -186,7 +194,7 @@ local rightGrid = Instance.new("Frame")
 rightGrid.Size = UDim2.new(0, 230, 0, 230)
 rightGrid.Position = UDim2.new(1, -250, 0, 70)
 rightGrid.BackgroundTransparency = 1
-rightGrid.Parent = mainFrame
+rightGrid.Parent = contentFrame
 
 local gridLayout = Instance.new("UIGridLayout")
 gridLayout.CellSize = UDim2.new(0, 110, 0, 65)
@@ -207,11 +215,16 @@ for _, btnData in ipairs(actionButtons) do
 	corner.Parent = btn
 end
 
+-- UIScale Object for proportional sizing of all elements (including color buttons)
+local uiScale = Instance.new("UIScale")
+uiScale.Scale = 1
+uiScale.Parent = mainFrame
+
 -- =======================================================
--- LOGIC & FUNCTIONALITY
+-- LOGIC & FEATURES
 -- =======================================================
 
--- Dice Rolling Function
+-- 1. Dice Rolling
 local colorKeys = {"Orange", "Blue", "Yellow", "Green", "Purple", "Red"}
 
 rollBtn.MouseButton1Click:Connect(function()
@@ -222,18 +235,16 @@ rollBtn.MouseButton1Click:Connect(function()
 		slotData.Label.Text = randomColorName
 		table.insert(results, randomColorName)
 	end
-	
-	-- Update result string
 	resultLabel.Text = "Result: " .. table.concat(results, ", ")
 end)
 
--- UI Scaling System
+-- 2. Full Proportional Scaling System (Size + / -)
 local currentScale = 1
 
 local function updateScale(delta)
 	currentScale = math.clamp(currentScale + delta, 0.5, 1.5)
 	percentLabel.Text = math.round(currentScale * 100) .. "%"
-	mainFrame.Size = UDim2.new(0, 600 * currentScale, 0, 360 * currentScale)
+	uiScale.Scale = currentScale
 end
 
 plusSize.MouseButton1Click:Connect(function()
@@ -244,3 +255,56 @@ minusSize.MouseButton1Click:Connect(function()
 	updateScale(-0.1)
 end)
 
+-- 3. Minimize / Maximize Functionality
+local isMinimized = false
+minBtn.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	if isMinimized then
+		contentFrame.Visible = false
+		mainFrame.Size = UDim2.new(0, 600, 0, 65)
+		minBtn.Text = "+"
+	else
+		contentFrame.Visible = true
+		mainFrame.Size = UDim2.new(0, 600, 0, 360)
+		minBtn.Text = "-"
+	end
+end)
+
+-- 4. Drag Window Mechanics
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+	mainFrame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+mainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
