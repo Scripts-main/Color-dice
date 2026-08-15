@@ -1,5 +1,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -72,7 +74,6 @@ local diceColors = {
 	Verde = Color3.fromRGB(111, 207, 151)
 }
 
--- Lista de los 6 colores posibles para al girar
 local colorKeys = {"Rojo", "Morado", "Azul", "Naranja", "Amarillo", "Verde"}
 
 -- Contenedor para exactamente 4 SLOTS de dados
@@ -180,17 +181,58 @@ local sizeCorner2 = Instance.new("UICorner")
 sizeCorner2.CornerRadius = UDim.new(0, 8)
 sizeCorner2.Parent = plusSize
 
--- 5. Invitación de Discord (Centrada abajo y de tamaño legible)
+-- 5. Invitación de Discord & Botón Copiar (Centrados Abajo)
+local discordLink = "https://discord.gg/KJFgdK6NHM"
+
+local discordContainer = Instance.new("Frame")
+discordContainer.Size = UDim2.new(0, 420, 0, 26)
+discordContainer.Position = UDim2.new(0.5, -210, 1, -32)
+discordContainer.BackgroundTransparency = 1
+discordContainer.Parent = contentFrame
+
 local discordText = Instance.new("TextLabel")
-discordText.Size = UDim2.new(0, 400, 0, 25)
-discordText.Position = UDim2.new(0.5, -200, 1, -30)
+discordText.Size = UDim2.new(0, 270, 1, 0)
+discordText.Position = UDim2.new(0, 0, 0, 0)
 discordText.BackgroundTransparency = 1
-discordText.Text = "Discord: https://discord.gg/KJFgdK6NHM"
+discordText.Text = "Discord: " .. discordLink
 discordText.TextColor3 = Color3.fromRGB(160, 160, 185)
 discordText.TextSize = 11
 discordText.Font = Enum.Font.FredokaOne
-discordText.TextXAlignment = Enum.TextXAlignment.Center
-discordText.Parent = contentFrame
+discordText.TextXAlignment = Enum.TextXAlignment.Right
+discordText.Parent = discordContainer
+
+local copyBtn = Instance.new("TextButton")
+copyBtn.Size = UDim2.new(0, 140, 1, 0)
+copyBtn.Position = UDim2.new(0, 275, 0, 0)
+copyBtn.BackgroundColor3 = Color3.fromRGB(45, 40, 65)
+copyBtn.Text = "🔗 Copiar Discord"
+copyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyBtn.TextSize = 13
+copyBtn.Font = Enum.Font.FredokaOne
+copyBtn.Parent = discordContainer
+
+local copyCorner = Instance.new("UICorner")
+copyCorner.CornerRadius = UDim.new(0, 8)
+copyCorner.Parent = copyBtn
+
+-- Función para copiar enlace al portapapeles
+copyBtn.MouseButton1Click:Connect(function()
+	local setClip = setclipboard or toclipboard or set_clipboard
+	if setClip then
+		setClip(discordLink)
+	end
+	
+	-- Feedback visual al copiar
+	copyBtn.Text = "✓ ¡Copiado!"
+	copyBtn.BackgroundColor3 = Color3.fromRGB(111, 207, 151)
+	copyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+	
+	task.delay(1.5, function()
+		copyBtn.Text = "🔗 Copiar Discord"
+		copyBtn.BackgroundColor3 = Color3.fromRGB(45, 40, 65)
+		copyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	end)
+end)
 
 -- 6. Botones de Acción Derecha
 local actionButtons = {
@@ -227,25 +269,57 @@ for _, btnData in ipairs(actionButtons) do
 	corner.Parent = btn
 end
 
--- Objeto UIScale para escalado proporcional de toda la interfaz
+-- Objeto UIScale
 local uiScale = Instance.new("UIScale")
 uiScale.Scale = 1
 uiScale.Parent = mainFrame
 
 -- =======================================================
--- LÓGICA Y FUNCIONALIDAD
+-- LÓGICA Y ANIMACIÓN DE DADOS
 -- =======================================================
 
--- 1. Girar Dados (Aleatoriza los 4 slots entre los 6 colores disponibles)
+local isRolling = false
+
 rollBtn.MouseButton1Click:Connect(function()
-	for _, slotData in ipairs(diceSlots) do
-		local randomColorName = colorKeys[math.random(1, #colorKeys)]
-		slotData.Frame.BackgroundColor3 = diceColors[randomColorName]
-		slotData.Label.Text = randomColorName
+	if isRolling then return end
+	isRolling = true
+	
+	-- Pre-calcular los colores finales de los 4 dados
+	local finalResults = {}
+	for i = 1, #diceSlots do
+		table.insert(finalResults, colorKeys[math.random(1, #colorKeys)])
 	end
+	
+	-- PASO 1: Animación "a lo loco" durante 2 segundos
+	local startTime = os.clock()
+	while os.clock() - startTime < 2 do
+		for _, slotData in ipairs(diceSlots) do
+			local randomName = colorKeys[math.random(1, #colorKeys)]
+			slotData.Frame.BackgroundColor3 = diceColors[randomName]
+			slotData.Label.Text = randomName
+		end
+		task.wait(0.06)
+	end
+	
+	-- PASO 2: Caen 1 por 1 revelando el resultado final con rebote
+	for i, slotData in ipairs(diceSlots) do
+		local finalColorName = finalResults[i]
+		
+		slotData.Frame.Size = UDim2.new(0, 70, 0, 70)
+		slotData.Frame.BackgroundColor3 = diceColors[finalColorName]
+		slotData.Label.Text = finalColorName
+		
+		local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+		local tween = TweenService:Create(slotData.Frame, tweenInfo, {Size = UDim2.new(0, 60, 0, 60)})
+		tween:Play()
+		
+		task.wait(0.3)
+	end
+	
+	isRolling = false
 end)
 
--- 2. Sistema de Escalado Proporcional
+-- Sistema de Escalado Proporcional
 local currentScale = 1
 
 local function updateScale(delta)
@@ -262,7 +336,7 @@ minusSize.MouseButton1Click:Connect(function()
 	updateScale(-0.1)
 end)
 
--- 3. Funcionalidad de Minimizar / Maximizar
+-- Funcionalidad de Minimizar / Maximizar
 local isMinimized = false
 minBtn.MouseButton1Click:Connect(function()
 	isMinimized = not isMinimized
@@ -277,7 +351,7 @@ minBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 4. Mecánica para Mover la Ventana (Arrastrar)
+-- Mecánica para Mover la Ventana (Arrastrar)
 local dragging, dragInput, dragStart, startPos
 
 local function update(input)
