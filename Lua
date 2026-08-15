@@ -1,0 +1,246 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Destroy previous GUI if it exists
+if playerGui:FindFirstChild("ColorDiceGui") then
+	playerGui.ColorDiceGui:Destroy()
+end
+
+-- 1. Main ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ColorDiceGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- 2. Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 600, 0, 360)
+mainFrame.Position = UDim2.new(0.5, -300, 0.5, -180)
+mainFrame.BackgroundColor3 = Color3.fromRGB(24, 20, 37) -- Dark background
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 20)
+mainCorner.Parent = mainFrame
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0, 200, 0, 40)
+title.Position = UDim2.new(0, 20, 0, 15)
+title.BackgroundTransparency = 1
+title.Text = "Color Dice"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 22
+title.Font = Enum.Font.FredokaOne
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = mainFrame
+
+-- Minimize Button (-)
+local minBtn = Instance.new("TextButton")
+minBtn.Size = UDim2.new(0, 35, 0, 35)
+minBtn.Position = UDim2.new(1, -50, 0, 15)
+minBtn.BackgroundColor3 = Color3.fromRGB(72, 190, 226)
+minBtn.Text = "-"
+minBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+minBtn.TextSize = 24
+minBtn.Font = Enum.Font.FredokaOne
+minBtn.Parent = mainFrame
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(1, 0)
+minCorner.Parent = minBtn
+
+-- 3. Dice Slots Container
+local slotsFrame = Instance.new("Frame")
+slotsFrame.Size = UDim2.new(0, 300, 0, 80)
+slotsFrame.Position = UDim2.new(0, 20, 0, 70)
+slotsFrame.BackgroundTransparency = 1
+slotsFrame.Parent = mainFrame
+
+local diceColors = {
+	Orange = Color3.fromRGB(247, 131, 97),
+	Blue = Color3.fromRGB(86, 204, 242),
+	Yellow = Color3.fromRGB(254, 213, 89),
+	Green = Color3.fromRGB(111, 207, 151),
+	Purple = Color3.fromRGB(155, 81, 224),
+	Red = Color3.fromRGB(235, 87, 87)
+}
+
+local diceSlots = {}
+for i = 1, 4 do
+	local slot = Instance.new("Frame")
+	slot.Size = UDim2.new(0, 65, 0, 65)
+	slot.Position = UDim2.new(0, (i - 1) * 75, 0, 0)
+	slot.BackgroundColor3 = (i <= 2) and diceColors.Orange or diceColors.Blue
+	slot.BorderSizePixel = 0
+	slot.Parent = slotsFrame
+	
+	local slotCorner = Instance.new("UICorner")
+	slotCorner.CornerRadius = UDim.new(0, 14)
+	slotCorner.Parent = slot
+	
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, 0, 0, 20)
+	label.Position = UDim2.new(0, 0, 1, 2)
+	label.BackgroundTransparency = 1
+	label.Text = (i <= 2) and "Orange" or "Blue"
+	label.TextColor3 = Color3.fromRGB(180, 180, 200)
+	label.TextSize = 11
+	label.Font = Enum.Font.FredokaOne
+	label.Parent = slot
+	
+	table.insert(diceSlots, {Frame = slot, Label = label})
+end
+
+-- Roll Button
+local rollBtn = Instance.new("TextButton")
+rollBtn.Size = UDim2.new(0, 120, 0, 40)
+rollBtn.Position = UDim2.new(0, 20, 0, 165)
+rollBtn.BackgroundColor3 = Color3.fromRGB(254, 213, 89)
+rollBtn.Text = "Roll"
+rollBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+rollBtn.TextSize = 18
+rollBtn.Font = Enum.Font.FredokaOne
+rollBtn.Parent = mainFrame
+
+local rollCorner = Instance.new("UICorner")
+rollCorner.CornerRadius = UDim.new(0, 20)
+rollCorner.Parent = rollBtn
+
+-- 4. Size Control
+local sizeLabel = Instance.new("TextLabel")
+sizeLabel.Size = UDim2.new(0, 40, 0, 30)
+sizeLabel.Position = UDim2.new(0, 20, 0, 230)
+sizeLabel.BackgroundTransparency = 1
+sizeLabel.Text = "Size"
+sizeLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
+sizeLabel.TextSize = 14
+sizeLabel.Font = Enum.Font.FredokaOne
+sizeLabel.Parent = mainFrame
+
+local minusSize = Instance.new("TextButton")
+minusSize.Size = UDim2.new(0, 30, 0, 30)
+minusSize.Position = UDim2.new(0, 70, 0, 230)
+minusSize.BackgroundColor3 = Color3.fromRGB(45, 40, 65)
+minusSize.Text = "-"
+minusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
+minusSize.TextSize = 18
+minusSize.Font = Enum.Font.FredokaOne
+minusSize.Parent = mainFrame
+
+local sizeCorner1 = Instance.new("UICorner")
+sizeCorner1.CornerRadius = UDim.new(0, 8)
+sizeCorner1.Parent = minusSize
+
+local percentLabel = Instance.new("TextLabel")
+percentLabel.Size = UDim2.new(0, 60, 0, 30)
+percentLabel.Position = UDim2.new(0, 105, 0, 230)
+percentLabel.BackgroundTransparency = 1
+percentLabel.Text = "100%"
+percentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+percentLabel.TextSize = 14
+percentLabel.Font = Enum.Font.FredokaOne
+percentLabel.Parent = mainFrame
+
+local plusSize = Instance.new("TextButton")
+plusSize.Size = UDim2.new(0, 30, 0, 30)
+plusSize.Position = UDim2.new(0, 170, 0, 230)
+plusSize.BackgroundColor3 = Color3.fromRGB(45, 40, 65)
+plusSize.Text = "+"
+plusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
+plusSize.TextSize = 18
+plusSize.Font = Enum.Font.FredokaOne
+plusSize.Parent = mainFrame
+
+local sizeCorner2 = Instance.new("UICorner")
+sizeCorner2.CornerRadius = UDim.new(0, 8)
+sizeCorner2.Parent = plusSize
+
+-- Result Text
+local resultLabel = Instance.new("TextLabel")
+resultLabel.Size = UDim2.new(0, 280, 0, 30)
+resultLabel.Position = UDim2.new(0, 20, 0, 300)
+resultLabel.BackgroundTransparency = 1
+resultLabel.Text = "Result: Orange, Orange, Blue"
+resultLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
+resultLabel.TextSize = 13
+resultLabel.Font = Enum.Font.FredokaOne
+resultLabel.TextXAlignment = Enum.TextXAlignment.Left
+resultLabel.Parent = mainFrame
+
+-- 5. Right Action Buttons (Trade Quick Responses)
+local actionButtons = {
+	{Text = "+ Add More", Color = Color3.fromRGB(47, 128, 237)},
+	{Text = "? Deal?", Color = Color3.fromRGB(254, 213, 89)},
+	{Text = "X L Trade", Color = Color3.fromRGB(235, 87, 87)},
+	{Text = "✓ Fair Trade", Color = Color3.fromRGB(111, 207, 151)},
+	{Text = "≡ Last Offer", Color = Color3.fromRGB(138, 77, 217)},
+	{Text = "- No Thanks", Color = Color3.fromRGB(242, 153, 74)}
+}
+
+local rightGrid = Instance.new("Frame")
+rightGrid.Size = UDim2.new(0, 230, 0, 230)
+rightGrid.Position = UDim2.new(1, -250, 0, 70)
+rightGrid.BackgroundTransparency = 1
+rightGrid.Parent = mainFrame
+
+local gridLayout = Instance.new("UIGridLayout")
+gridLayout.CellSize = UDim2.new(0, 110, 0, 65)
+gridLayout.CellPadding = UDim2.new(0, 10, 0, 10)
+gridLayout.Parent = rightGrid
+
+for _, btnData in ipairs(actionButtons) do
+	local btn = Instance.new("TextButton")
+	btn.BackgroundColor3 = btnData.Color
+	btn.Text = btnData.Text
+	btn.TextColor3 = (btnData.Color == Color3.fromRGB(254, 213, 89)) and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 14
+	btn.Font = Enum.Font.FredokaOne
+	btn.Parent = rightGrid
+	
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 12)
+	corner.Parent = btn
+end
+
+-- =======================================================
+-- LOGIC & FUNCTIONALITY
+-- =======================================================
+
+-- Dice Rolling Function
+local colorKeys = {"Orange", "Blue", "Yellow", "Green", "Purple", "Red"}
+
+rollBtn.MouseButton1Click:Connect(function()
+	local results = {}
+	for _, slotData in ipairs(diceSlots) do
+		local randomColorName = colorKeys[math.random(1, #colorKeys)]
+		slotData.Frame.BackgroundColor3 = diceColors[randomColorName]
+		slotData.Label.Text = randomColorName
+		table.insert(results, randomColorName)
+	end
+	
+	-- Update result string
+	resultLabel.Text = "Result: " .. table.concat(results, ", ")
+end)
+
+-- UI Scaling System
+local currentScale = 1
+
+local function updateScale(delta)
+	currentScale = math.clamp(currentScale + delta, 0.5, 1.5)
+	percentLabel.Text = math.round(currentScale * 100) .. "%"
+	mainFrame.Size = UDim2.new(0, 600 * currentScale, 0, 360 * currentScale)
+end
+
+plusSize.MouseButton1Click:Connect(function()
+	updateScale(0.1)
+end)
+
+minusSize.MouseButton1Click:Connect(function()
+	updateScale(-0.1)
+end)
+
