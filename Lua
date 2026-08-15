@@ -83,20 +83,15 @@ slotsFrame.Position = UDim2.new(0, 20, 0, 70)
 slotsFrame.BackgroundTransparency = 1
 slotsFrame.Parent = contentFrame
 
--- Configuración inicial visible de los 4 dados
-local initialDice = {
-	{Name = "Naranja", Color = diceColors.Naranja},
-	{Name = "Naranja", Color = diceColors.Naranja},
-	{Name = "Azul", Color = diceColors.Azul},
-	{Name = "Azul", Color = diceColors.Azul}
-}
-
+-- Creación inicial de los 4 dados AL AZAR
 local diceSlots = {}
-for i, diceData in ipairs(initialDice) do
+for i = 1, 4 do
+	local randomColorName = colorKeys[math.random(1, #colorKeys)]
+	
 	local slot = Instance.new("Frame")
 	slot.Size = UDim2.new(0, 60, 0, 60)
 	slot.Position = UDim2.new(0, (i - 1) * 70, 0, 0)
-	slot.BackgroundColor3 = diceData.Color
+	slot.BackgroundColor3 = diceColors[randomColorName]
 	slot.BorderSizePixel = 0
 	slot.Parent = slotsFrame
 	
@@ -108,7 +103,7 @@ for i, diceData in ipairs(initialDice) do
 	label.Size = UDim2.new(1, 0, 0, 15)
 	label.Position = UDim2.new(0, 0, 1, 2)
 	label.BackgroundTransparency = 1
-	label.Text = diceData.Name
+	label.Text = randomColorName
 	label.TextColor3 = Color3.fromRGB(180, 180, 200)
 	label.TextSize = 10
 	label.Font = Enum.Font.FredokaOne
@@ -181,7 +176,7 @@ local sizeCorner2 = Instance.new("UICorner")
 sizeCorner2.CornerRadius = UDim.new(0, 8)
 sizeCorner2.Parent = plusSize
 
--- 5. Invitación de Discord & Botón Copiar (Centrados Abajo)
+-- 5. Invitación de Discord & Botón Copiar
 local discordLink = "https://discord.gg/KJFgdK6NHM"
 
 local discordContainer = Instance.new("Frame")
@@ -215,14 +210,12 @@ local copyCorner = Instance.new("UICorner")
 copyCorner.CornerRadius = UDim.new(0, 8)
 copyCorner.Parent = copyBtn
 
--- Función para copiar enlace al portapapeles
 copyBtn.MouseButton1Click:Connect(function()
 	local setClip = setclipboard or toclipboard or set_clipboard
 	if setClip then
 		setClip(discordLink)
 	end
 	
-	-- Feedback visual al copiar
 	copyBtn.Text = "✓ ¡Copiado!"
 	copyBtn.BackgroundColor3 = Color3.fromRGB(111, 207, 151)
 	copyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -284,13 +277,13 @@ rollBtn.MouseButton1Click:Connect(function()
 	if isRolling then return end
 	isRolling = true
 	
-	-- Pre-calcular los colores finales de los 4 dados
+	-- Pre-calcular los resultados finales AL AZAR
 	local finalResults = {}
 	for i = 1, #diceSlots do
 		table.insert(finalResults, colorKeys[math.random(1, #colorKeys)])
 	end
 	
-	-- PASO 1: Animación "a lo loco" durante 2 segundos
+	-- Animación "a lo loco" durante 2 segundos
 	local startTime = os.clock()
 	while os.clock() - startTime < 2 do
 		for _, slotData in ipairs(diceSlots) do
@@ -301,7 +294,7 @@ rollBtn.MouseButton1Click:Connect(function()
 		task.wait(0.06)
 	end
 	
-	-- PASO 2: Caen 1 por 1 revelando el resultado final con rebote
+	-- Caen 1 por 1 revelando el resultado al azar con animación
 	for i, slotData in ipairs(diceSlots) do
 		local finalColorName = finalResults[i]
 		
@@ -319,7 +312,7 @@ rollBtn.MouseButton1Click:Connect(function()
 	isRolling = false
 end)
 
--- Sistema de Escalado Proporcional
+-- Escalado Proporcional
 local currentScale = 1
 
 local function updateScale(delta)
@@ -336,7 +329,7 @@ minusSize.MouseButton1Click:Connect(function()
 	updateScale(-0.1)
 end)
 
--- Funcionalidad de Minimizar / Maximizar
+-- Minimizar / Maximizar
 local isMinimized = false
 minBtn.MouseButton1Click:Connect(function()
 	isMinimized = not isMinimized
@@ -351,7 +344,7 @@ minBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Mecánica para Mover la Ventana (Arrastrar)
+-- Arrastrar ventana
 local dragging, dragInput, dragStart, startPos
 
 local function update(input)
